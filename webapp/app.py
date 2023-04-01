@@ -1,16 +1,16 @@
 import dash
+from dash import html, dcc
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 
-# Load your sales data
+# Load your sales datapytho
 sales_data = pd.read_parquet('sales.parquet.gzip')
 
 # Create the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SOLAR])
+server = app.server
 
 # Define the app layout
 app.layout = dbc.Container([
@@ -31,6 +31,13 @@ app.layout = dbc.Container([
         ], width=4),
         
     ], className='mb-5 mt-5'),
+    dbc.Row([
+        dbc.Col([
+            html.P("""A Machine Learning model was trained using historical sales. 
+            This model provides forecasts with 90% accuracy""", className='lead'),
+            
+        ], width=4),
+    dbc.Col([
     dbc.Row([
         dbc.Col([
             html.Label('Select Date Range'),
@@ -75,7 +82,9 @@ app.layout = dbc.Container([
         dbc.Col([
             dbc.Button('Submit', id='submit-button', color='primary', className='mr-1 col-md-12 text-center',style = {'margin-top':'25px'})
         ], width=12),
-    ], className='mb-5'),
+        ])
+    ], width=8),
+    ], className='mb-5 mt-5'),
     dbc.Row([
         dbc.Col([
             dcc.Graph(id='sales-plot')
