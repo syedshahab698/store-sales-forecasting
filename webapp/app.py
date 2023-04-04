@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc
+from dash import html, dcc, ctx
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
@@ -81,28 +81,44 @@ app.layout = dbc.Container([
         ], width=3),
         dbc.Col([
             dbc.Button('Submit', id='submit-button', color='primary', className='mr-1 col-md-12 text-center',style = {'margin-top':'25px'})
-        ], width=12),
+        ], width=6),
+        dbc.Col([
+            dbc.Button("Download Forecasts", id="btn-download", color='primary', className='mr-1 col-md-12 text-center',style = {'margin-top':'25px'}),
+            dcc.Download(id="download-csv")
+        ], width=6),
         ])
     ], width=8),
     ], className='mb-5 mt-5'),
     dbc.Row([
         dbc.Col([
-            dcc.Graph(id='sales-plot')
-        ], width=12)
+            dcc.Loading(dcc.Graph(id='sales-plot'))
+        ], width=12),
+        
+        
+
+
     ], className='mb-5')
 ])
 
 # Define the app callback
 @app.callback(
     dash.dependencies.Output('sales-plot', 'figure'),
-    [dash.dependencies.Input('submit-button', 'n_clicks')],
+    dash.dependencies.Output("download-csv", "data"),
+    [dash.dependencies.Input('submit-button', 'n_clicks'),
+     dash.dependencies.Input("btn-download", "n_clicks"),],
     [dash.dependencies.State('date-range', 'start_date'),
      dash.dependencies.State('date-range', 'end_date'),
      dash.dependencies.State('product-family', 'value'),
      dash.dependencies.State('forecast-days', 'value'),
-     dash.dependencies.State('store-number', 'value')]
+     dash.dependencies.State('store-number', 'value')],
+    # prevent_initial_call=True,
 )
-def update_sales_plot(n_clicks, start_date, end_date, product_family, forecast_days, store_nbr):
+def update_sales_plot(n_clicks, download_btn, start_date, end_date, product_family, forecast_days, store_nbr):
+
+    button_id = ctx.triggered_id if not None else 'No clicks yet'
+
+    
+
     filtered_sales_data = sales_data[(sales_data['date'] >= start_date) & (sales_data['date'] <= end_date) & (sales_data['family'] == product_family) & (sales_data['store_nbr'] == store_nbr)]
     filtered_sales_data = filtered_sales_data.sort_values('date')
 
@@ -128,6 +144,11 @@ def update_sales_plot(n_clicks, start_date, end_date, product_family, forecast_d
         xaxis=dict(showgrid=False),
         yaxis=dict(showgrid=False)
     )
-    return sales_fig
+
+    if button_id == 'btn-download':
+
+        return sales_fig, dcc.send_data_frame(sales_data_forecast.to_csv, "Store{}_{}.csv".format(store_nbr, product_family ))
+    else:
+        return sales_fig, None
 if __name__ == '__main__':
     app.run_server(debug=True)
