@@ -124,7 +124,6 @@ def update_sales_plot(n_clicks, download_btn, start_date, end_date, product_fami
 
     d = filtered_sales_data.date.max()
     d_r = pd.date_range(start = d, periods=forecast_days, freq = 'd')
-# Calculate forecasted sales data using a simple moving average
     sales_data_forecast = filtered_sales_data.copy()
     sales_data_forecast['sales'] = sales_data_forecast['sales'].rolling(window=7).mean()
     sales_data_forecast = sales_data_forecast.tail(forecast_days)
