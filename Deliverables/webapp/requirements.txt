@@ -1,0 +1,7 @@
+dash
+gunicorn
+plotly
+pandas
+dash_bootstrap_components
+pyarrow
+fastparquet
